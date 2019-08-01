@@ -1,5 +1,7 @@
 package com.oneelevenelm.bedmate.model;
 
+import android.content.Context;
+
 import com.oneelevenelm.bedmate.model.entities.Scene;
 import com.oneelevenelm.bedmate.utils.Disposable;
 
@@ -20,4 +22,5 @@ public interface SceneModel extends Disposable {
 
     void addSceneList(ArrayList<Scene> scenes);
     void addSceneList(ArrayList<Scene> scenes, boolean reset);
+    void init (Context context);
 }

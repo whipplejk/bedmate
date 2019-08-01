@@ -14,13 +14,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
+
+import com.google.inject.Inject;
+import com.oneelevenelm.bedmate.model.SceneModel;
+import com.oneelevenelm.bedmate.model.SceneModelImpl;
+import com.oneelevenelm.bedmate.model.events.SceneModelUpdateEvent;
 
 import net.danlew.android.joda.DateUtils;
 
 import org.joda.time.DateTime;
 
+import roboguice.RoboGuice;
 import roboguice.activity.RoboActivity;
+import roboguice.event.EventManager;
+import roboguice.event.Observes;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
@@ -36,10 +45,17 @@ import roboguice.inject.InjectView;
 @ContentView(R.layout.activity_main)
 public class MainActivity extends RoboActivity {
 
+    private static final String LOG_TAG = "MainActivity";
+
+    @Inject
+    SceneModel sceneModel;
     @InjectView(R.id.txtDate)
     TextView dateText;
     @InjectView(R.id.txtTime)
     TextView timeText;
+    @InjectView(R.id.txtWelcome)
+    TextView welcomeText;
+
     private BroadcastReceiver timeTickReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -54,9 +70,15 @@ public class MainActivity extends RoboActivity {
         }
     };
 
+    public MainActivity (){
+        Log.i("MainActivity", "Constructor");
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         //Render the current date and time
         renderCurrentDate();
@@ -68,23 +90,53 @@ public class MainActivity extends RoboActivity {
 
         registerReceiver(activeViewReceiver, actionViewFilter);
         registerReceiver(timeTickReceiver, timeIntentFilter);
+
+        Log.i("Main Activity", "Started Main Activity.");
+        Log.i("Main Activity", "Event Manager " + super.eventManager);
+
+        if( sceneModel == null ){
+            Log.d(LOG_TAG, "Scene Model is not injected");
+            RoboGuice.getInjector(this).injectMembers(this);
+            Log.i(LOG_TAG, "Context : " + this );
+            Log.i(LOG_TAG, "SceneModel : " + sceneModel);
+
+            //sceneModel.init(this);
+
+        }else {
+            Log.i(LOG_TAG, "Context : " + this );
+            Log.i(LOG_TAG, "SceneModel : " + sceneModel);
+            sceneModel.init(this);
+        }
+
+
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(timeTickReceiver);
+        unregisterReceiver(activeViewReceiver);
+
+        sceneModel.destroy();
+        sceneModel = null;
+
     }
 
     private void renderCurrentTime() {
         DateTime now = DateTime.now();
-        timeText.setText(DateUtils.formatDateTime(this, now, DateUtils.FORMAT_SHOW_TIME));
+        if(timeText!=null)
+            timeText.setText(DateUtils.formatDateTime(this, now, DateUtils.FORMAT_SHOW_TIME));
     }
 
     private void renderCurrentDate() {
         //Need to retrieve the current date
         DateTime now = DateTime.now();
-        dateText.setText(DateUtils.formatDateTime(this, now, DateUtils.FORMAT_SHOW_DATE));
+        if (dateText != null)
+            dateText.setText(DateUtils.formatDateTime(this, now, DateUtils.FORMAT_SHOW_DATE));
     }
 
+    public void handleSceneModelInit (@Observes SceneModelUpdateEvent evt){
+        Log.i("Main Activity", "Received a scene model init event.");
+    }
 }

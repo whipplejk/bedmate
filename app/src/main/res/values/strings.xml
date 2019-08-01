@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Bedmate</string>
+
+    <string name="generic_scene_label">Scene</string>
 </resources>

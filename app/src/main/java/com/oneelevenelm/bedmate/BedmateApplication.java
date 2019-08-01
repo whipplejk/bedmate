@@ -10,8 +10,12 @@
 package com.oneelevenelm.bedmate;
 
 import android.app.Application;
+import android.content.Context;
+import android.util.Log;
 
 import net.danlew.android.joda.JodaTimeAndroid;
+
+import roboguice.RoboGuice;
 
 /**
  * Custom application file for the BedmateApplication.
@@ -22,10 +26,15 @@ import net.danlew.android.joda.JodaTimeAndroid;
  */
 
 public class BedmateApplication extends Application {
+
+    private static final String TAG_NAME = "Application";
+
     @Override
     public void onCreate (){
         super.onCreate();
         //Need to init the joda date framework
         JodaTimeAndroid.init(this);
+        Log.i(TAG_NAME, "Application started");
     }
+
 }
